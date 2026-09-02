@@ -78,6 +78,7 @@ func TestWorkflowsUseNativeArmRunnersAndCurrentActions(t *testing.T) {
 			"platform: linux/arm64",
 			"push-by-digest=true",
 			"actions/download-artifact@v8",
+			"DOCKER_METADATA_OUTPUT_JSON: ${{ steps.meta.outputs.json }}",
 			"docker buildx imagetools create",
 		} {
 			if !strings.Contains(workflow, required) {
