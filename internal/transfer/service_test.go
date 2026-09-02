@@ -1274,8 +1274,18 @@ func TestInitialRetryAndTerminalAuditsUseDurableAttemptOccurrences(t *testing.T)
 	}
 	waitForTransferJobStatus(t, db, job.ID, transferjob.StatusFailed)
 	failDial.Store(false)
-	if _, err := service.RetryJob(t.Context(), owner.ID, job.ID); err != nil {
-		t.Fatal(err)
+	var retryErr error
+	for range 100 {
+		if _, retryErr = service.RetryJob(t.Context(), owner.ID, job.ID); retryErr == nil {
+			break
+		}
+		if !errors.Is(retryErr, ErrAlreadyActive) {
+			t.Fatal(retryErr)
+		}
+		time.Sleep(time.Millisecond)
+	}
+	if retryErr != nil {
+		t.Fatalf("RetryJob did not become admissible: %v", retryErr)
 	}
 	waitForTransferJobStatus(t, db, job.ID, transferjob.StatusCompleted)
 	for action, want := range map[string]int{
