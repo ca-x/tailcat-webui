@@ -16,17 +16,17 @@ concurrency:
 jobs:
   verify:
     name: Frontend, Go, and container checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Scan source for high-confidence secret patterns
         run: make check-secrets
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 11.3.0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '26'
           cache: pnpm
@@ -48,7 +48,7 @@ jobs:
       - name: Verify committed embedded web assets
         run: diff -qr web/dist webdist/dist
 
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           check-latest: true
@@ -67,9 +67,9 @@ jobs:
           CGO_ENABLED: '0'
         run: go build -trimpath -o /tmp/tailcat-webui ./cmd/tailcat-webui
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
       - name: Verify container build
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           platforms: linux/amd64
@@ -80,19 +80,19 @@ jobs:
   target-compile:
     name: Compile ${{ matrix.platform }}
     needs: verify
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { platform: linux-amd64, goos: linux, goarch: amd64, binary: tailcat-webui-linux-amd64 }
-          - { platform: linux-arm64, goos: linux, goarch: arm64, binary: tailcat-webui-linux-arm64 }
-          - { platform: windows-amd64, goos: windows, goarch: amd64, binary: tailcat-webui-windows-amd64.exe }
-          - { platform: darwin-amd64, goos: darwin, goarch: amd64, binary: tailcat-webui-darwin-amd64 }
-          - { platform: darwin-arm64, goos: darwin, goarch: arm64, binary: tailcat-webui-darwin-arm64 }
+          - { runner: ubuntu-24.04, platform: linux-amd64, goos: linux, goarch: amd64, binary: tailcat-webui-linux-amd64 }
+          - { runner: ubuntu-24.04-arm, platform: linux-arm64, goos: linux, goarch: arm64, binary: tailcat-webui-linux-arm64 }
+          - { runner: ubuntu-24.04, platform: windows-amd64, goos: windows, goarch: amd64, binary: tailcat-webui-windows-amd64.exe }
+          - { runner: ubuntu-24.04, platform: darwin-amd64, goos: darwin, goarch: amd64, binary: tailcat-webui-darwin-amd64 }
+          - { runner: ubuntu-24.04-arm, platform: darwin-arm64, goos: darwin, goarch: arm64, binary: tailcat-webui-darwin-arm64 }
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           check-latest: true
@@ -117,8 +117,8 @@ jobs:
     env:
       CGO_ENABLED: '0'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           check-latest: true

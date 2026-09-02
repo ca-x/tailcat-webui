@@ -39,3 +39,50 @@ func TestCIVerifiesCommittedWebdistBeforeBuilding(t *testing.T) {
 		t.Fatal("Windows runtime job must exercise private filesystem and transfer storage behavior")
 	}
 }
+
+func TestWorkflowsUseNativeArmRunnersAndCurrentActions(t *testing.T) {
+	workflows := make(map[string]string)
+	for _, name := range []string{"ci.yml", "docker.yml", "release.yml"} {
+		content, err := os.ReadFile("../.github/workflows/" + name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		workflows[name] = string(content)
+	}
+	for name, workflow := range workflows {
+		if !strings.Contains(workflow, "actions/checkout@v7") {
+			t.Fatalf("%s must use actions/checkout@v7", name)
+		}
+		for _, stale := range []string{
+			"actions/checkout@v4",
+			"pnpm/action-setup@v4",
+			"actions/setup-node@v4",
+			"actions/setup-go@v6",
+			"actions/upload-artifact@v4",
+			"docker/setup-qemu-action",
+			"docker/setup-buildx-action@v3",
+			"docker/login-action@v3",
+			"docker/metadata-action@v5",
+			"docker/build-push-action@v6",
+			"softprops/action-gh-release@v2",
+		} {
+			if strings.Contains(workflow, stale) {
+				t.Fatalf("%s retains stale action %q", name, stale)
+			}
+		}
+	}
+	for _, name := range []string{"docker.yml", "release.yml"} {
+		workflow := workflows[name]
+		for _, required := range []string{
+			"runner: ubuntu-24.04-arm",
+			"platform: linux/arm64",
+			"push-by-digest=true",
+			"actions/download-artifact@v8",
+			"docker buildx imagetools create",
+		} {
+			if !strings.Contains(workflow, required) {
+				t.Fatalf("%s is missing native multi-architecture fragment %q", name, required)
+			}
+		}
+	}
+}

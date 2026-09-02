@@ -257,6 +257,10 @@ The full release gate also runs actionlint, dependency and vulnerability
 audits, five cross-builds, archive inspection, and a local Docker build when a
 container engine is available.
 
+GitHub releases build the amd64 and arm64 container images concurrently on
+native `ubuntu-24.04` and `ubuntu-24.04-arm` runners, then merge their immutable
+digests into one multi-architecture manifest without QEMU emulation.
+
 The Go API is split into focused auth, Tailcat runtime, publishing, and HTTP
 packages. Direct upstream Tailcat imports are isolated under `internal/tailnet`
 because Tailcat does not promise API or wire-format stability.

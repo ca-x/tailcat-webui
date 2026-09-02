@@ -210,6 +210,10 @@ make verify
 扫描。完整发布门禁还会分别运行 actionlint、依赖与漏洞审计、五目标交叉编译、
 归档检查，并在主机具备容器引擎时执行本地 Docker 构建。
 
+GitHub Release 会在原生 `ubuntu-24.04` 与 `ubuntu-24.04-arm` runner 上并行构建
+amd64/arm64 容器镜像，再按不可变 digest 合并为一个多架构 manifest，不再使用
+QEMU 模拟构建。
+
 SQLite 默认启用外键、WAL、`synchronous=NORMAL`、5 秒 busy timeout、mmap 和
 有界连接池。出于 WAL 并发读性能考虑，不启用 shared-cache。
 
