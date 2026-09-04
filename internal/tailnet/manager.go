@@ -1345,7 +1345,7 @@ func (m *Manager) client(ctx context.Context, userID, id string) (ClientRuntime,
 	return client, row, nil
 }
 
-func (m *Manager) resolveRegion(ctx context.Context, spec, derpMapURL string) (*tailcfg.DERPRegion, int, error) {
+func (m *Manager) resolveRegion(ctx context.Context, spec, derpMapURL string) (*tailcfg.DERPRegion, tailcfg.DERPRegionID, error) {
 	spec = normalizeRegion(spec)
 	if strings.Contains(spec, ".") || strings.Contains(spec, ",") {
 		region := &tailcfg.DERPRegion{RegionID: 900, RegionCode: "custom", RegionName: "Custom DERP"}
@@ -1385,7 +1385,7 @@ func (m *Manager) resolveRegion(ctx context.Context, spec, derpMapURL string) (*
 		}
 		return region, 0, nil
 	}
-	if regionID, err := strconv.Atoi(spec); err == nil && regionID > 0 {
+	if regionID, err := tailcfg.ParseDERPRegionID(spec); err == nil {
 		region := dm.Regions[regionID]
 		if region == nil {
 			return nil, 0, fmt.Errorf("unknown DERP region %d", regionID)

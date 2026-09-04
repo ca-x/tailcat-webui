@@ -40,7 +40,7 @@ type ReservedTCPHandlerFactory func(serverID string) TCPHandler
 type ServerSpec struct {
 	Key                 key.NodePrivate
 	Region              *tailcfg.DERPRegion
-	RegionID            int
+	RegionID            tailcfg.DERPRegionID
 	DERPMapURL          string
 	AllowedClients      []key.NodePublic
 	TCPHandlers         map[uint16]TCPHandler
